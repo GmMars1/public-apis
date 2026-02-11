@@ -68,6 +68,37 @@ class TestValidadeFormat(unittest.TestCase):
             with self.subTest():
                 self.assertEqual(res, ex_res)
 
+    def test_if_get_categories_content_handles_entries_before_category_header(self):
+        """Test that entries before any category header are safely ignored."""
+        fake_contents = [
+            '# Title',
+            'Some text',
+            'API | Description | Auth |',
+            '|---|---|---|',
+            '| [SomeAPI](https://www.ex.com) | Desc | `apiKey` |',
+            '',
+            '### A',
+            'API | Description | Auth | HTTPS | CORS |',
+            '|---|---|---|---|---|',
+            '| [AA](https://www.ex.com) | Desc | `apiKey` | Yes | Yes |',
+            '| [AB](https://www.ex.com) | Desc | `apiKey` | Yes | Yes |'
+        ]
+
+        # This should not raise UnboundLocalError
+        result = get_categories_content(fake_contents)
+        self.assertIsInstance(result, tuple)
+
+        categories, category_line_num = result
+        self.assertIsInstance(categories, dict)
+        self.assertIsInstance(category_line_num, dict)
+
+        # Only entries under category A should be included
+        expected_categories = {'A': ['AA', 'AB']}
+        expected_line_nums = {'A': 6}
+
+        self.assertEqual(categories, expected_categories)
+        self.assertEqual(category_line_num, expected_line_nums)
+
     def test_if_check_alphabetical_order_return_correct_msg_error(self):
         correct_lines = [
             '### A',
