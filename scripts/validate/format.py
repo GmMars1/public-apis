@@ -53,11 +53,8 @@ def get_categories_content(contents: List[str]) -> Tuple[Categories, CategoriesL
             category_line_num[category] = line_num
             continue
 
-        if not line_content.startswith('|') or line_content.startswith('|---'):
-            continue
-
-        # Skip table entries that appear before any category header
-        if category is None:
+        # Skip non-table lines, separator lines, and table entries before any category header
+        if not line_content.startswith('|') or line_content.startswith('|---') or category is None:
             continue
 
         raw_title = [
